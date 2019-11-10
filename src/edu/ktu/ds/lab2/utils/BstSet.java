@@ -1,7 +1,9 @@
 package edu.ktu.ds.lab2.utils;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -500,9 +502,9 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
      */
     @Override
     public SortedSet<E> tailSet(E fromElement) {
-        SortedSet<E> sort = new BstSet<E>();
-        SortedSet<E> el = new BstSet<E>();
-        if (fromElement == null /*|| (root.element == element && root.left == null)*/ || root == null) {
+        SortedSet<E> sort = new BstSet<>();
+        SortedSet<E> el = new BstSet<>();
+        if (fromElement == null  || root == null) {
             return (SortedSet<E>)el;
         }
         BstNode<E> node = root;
@@ -539,6 +541,51 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
             headSetRecursive(el, node.left, 1);
         }
     }
+     
+     
+     
+     //Medžio aukštis
+     
+    @Override
+      public int height()
+    {
+        if (root == null) {
+            return 0;
+        }
+        else if (root.left == null && root.right == null) {
+            return 1;
+        }
+        BstNode<E> node = root;
+        int max = 0;
+        List<Integer> d = new ArrayList<>();
+        recHeight(root, d, 1);
+        for (Integer heights : d) {
+            System.out.print(heights + " ");
+            if (heights > max) {
+                max = heights;
+            }
+        }
+        return max;
+    }
+        /**
+     * 
+     * @param node
+     * @param height 
+     */
+    public void recHeight(BstNode<E> node, List<Integer> height, int count)
+    {
+        count++;
+        if (node.right != null) {
+            height.add(count);
+                    recHeight(node.right, height, count);
+        }
+        if (node.left != null) {
+            height.add(count);
+                    recHeight(node.left, height, count);
+        }
+    }
+     
+     
 
     /**
      * Grąžinamas tiesioginis iteratorius.
@@ -604,8 +651,8 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
 
         @Override
         public void remove() {
-            while(hasNext()){
-                
+            if(root != null){
+                BstSet.this.remove((stack.empty() ? root : stack.pop()).element);
             }
         }
 
