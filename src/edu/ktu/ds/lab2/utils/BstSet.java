@@ -111,7 +111,25 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
 
         return node;
     }
-
+    
+    @Override
+    public Set<E> addSet(Set<E> setToAdd)
+    {
+        
+       root = this.addSetRecursive(setToAdd, root);
+        return this;
+    }
+    
+    
+    private BstNode<E> addSetRecursive(Set<E> setToAdd, BstNode<E> node){
+         if (node != null) {
+             
+             node.left = addSetRecursive(setToAdd, node.left);
+             node.right = addSetRecursive(setToAdd, node.right);
+         }
+         
+         return node;
+    }
     /**
      * Pašalinamas elementas iš aibės.
      *
@@ -125,7 +143,26 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
 
         root = removeRecursive(element, root);
     }
+    
+     @Override
+    public void callRemoveAll(){
+    
+        removeAll(this);
+    }
+    
+    //@Override
+    private boolean removeAll(BstSet<?> c){
+        
+        c.root = null;
+        c.size = 0;
+        return true;
+    //return false;
+    }
 
+    
+    
+    
+    
     private BstNode<E> removeRecursive(E element, BstNode<E> node) {
         if (node == null) {
             return node;
@@ -199,6 +236,8 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
         }
     }
 
+ 
+    
     /**
      * Grąžina maksimalaus rakto elementą paiešką pradedant mazgu node
      *
@@ -341,8 +380,69 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
      * @return Grąžinamas aibės poaibis iki elemento.
      */
     @Override
-    public Set<E> headSet(E element) {
-        throw new UnsupportedOperationException("Studentams reikia realizuoti headSet()");
+    public SortedSet<E> headSet(E toElement) {
+        SortedSet<E> sort = new BstSet<E>();
+        SortedSet<E> el = new BstSet<E>();
+        if (toElement == null /*|| (root.element == element && root.left == null)*/ || root == null) {
+            return (SortedSet<E>)el;
+        }
+        BstNode<E> node = root;
+        while (node != null) {
+            int cmp = c.compare(toElement, node.element);
+            if (cmp < 0) {
+                node = node.left;
+            } else if (cmp > 0) {
+                node = node.right;
+            } else {
+                if (node.left != null) {
+                   headSetRecursive(el, node, 0);
+                   return el;
+                }
+                else
+                    return (SortedSet<E>)el;
+            }
+        }
+        return null;
+    }
+    
+    
+    
+ public void headSetRecursive(SortedSet<E> el, BstNode<E> node, int k)
+    {
+        if (node.right != null && k == 1) {
+            System.out.println(node.element.toString());
+            el.add(node.right.element);
+            headSetRecursive(el, node.right, 1);
+        }
+        if (node.left != null) {
+            el.add(node.left.element);
+            headSetRecursive(el, node.left, 1);
+        }
+    }
+ 
+       @Override
+    public E lower(E e){
+        
+        if (e == null /*|| (root.element == element && root.left == null)*/ || root == null) {
+            return null;
+        }
+        BstNode<E> node = root;
+        while (node != null) {
+            int cmp = c.compare(e, node.element);
+            if (cmp < 0) {
+                node = node.left;
+            } else if (cmp > 0) {
+                node = node.right;
+            } else {
+                if (node.left != null) {
+                   return node.left.element;
+                }
+                else
+                    return null;
+            }
+        }
+        return null;
+    
     }
 //
     //
@@ -354,9 +454,43 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
      * @return Grąžinamas aibės poaibis nuo elemento element1 iki element2.
      */
     @Override
-    public Set<E> subSet(E element1, E element2) {
-        throw new UnsupportedOperationException("Studentams reikia realizuoti subSet()");
+    public SortedSet<E> subSet(E element1, E element2) {
+        SortedSet<E> el = headSet(element1);
+        SortedSet<E> el2 = tailSet(element2);
+
+        for (E e : el2) 
+        {
+         el.remove(e);
+        }
+        
+        if(el.size() > 1){
+            el.add(element1);
+            el.add(element2);
+        }
+        return el;
     }
+    
+    
+    @Override
+    public SortedSet<E> subSet(E fromElement, boolean fromInclusive, E toElement, boolean toInclusive)
+    {
+        
+        SortedSet<E> el = headSet(fromElement);
+        SortedSet<E> el2 = tailSet(toElement);
+
+        for (E e : el2) 
+        {
+         el.remove(e);
+        }
+        if(el.size() > 1){
+            if(fromInclusive)
+                el.add(fromElement);
+            if(toInclusive)
+                el.add(toElement);
+        }
+        return el;
+    }
+    
 
     /**
      * Grąžinamas aibės poaibis iki elemento.
@@ -365,8 +499,45 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
      * @return Grąžinamas aibės poaibis nuo elemento.
      */
     @Override
-    public Set<E> tailSet(E element) {
-        throw new UnsupportedOperationException("Studentams reikia realizuoti tailSet()");
+    public SortedSet<E> tailSet(E fromElement) {
+        SortedSet<E> sort = new BstSet<E>();
+        SortedSet<E> el = new BstSet<E>();
+        if (fromElement == null /*|| (root.element == element && root.left == null)*/ || root == null) {
+            return (SortedSet<E>)el;
+        }
+        BstNode<E> node = root;
+        while (node != null) {
+            int cmp = c.compare(fromElement, node.element);
+            if (cmp < 0) {
+                node = node.left;
+            } else if (cmp > 0) {
+                node = node.right;
+            } else {
+                if (node.right != null) {
+                    el.add(node.element);
+                   tailSetRecursive(el, node, 0);
+                   return el;
+                }
+                else
+                    return (SortedSet<E>)el;
+            }
+        }
+        return null;
+    }
+    
+    
+    
+     public void tailSetRecursive(SortedSet<E> el, BstNode<E> node, int k)
+    {
+        if (node.right != null) {
+            System.out.println(node.element.toString());
+            el.add(node.right.element);
+            headSetRecursive(el, node.right, 1);
+        }
+        if (node.left != null && k == 1) {
+            el.add(node.left.element);
+            headSetRecursive(el, node.left, 1);
+        }
     }
 
     /**
@@ -433,7 +604,9 @@ public class BstSet<E extends Comparable<E>> implements SortedSet<E>, Cloneable 
 
         @Override
         public void remove() {
-            throw new UnsupportedOperationException("Studentams reikia realizuoti remove()");
+            while(hasNext()){
+                
+            }
         }
 
         private void toStack(BstNode<E> n) {
